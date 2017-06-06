@@ -8,49 +8,77 @@
  * E-Mail: info@symedia.ru
  */
 
-get_header(); ?>
-<form action="" method="get">
-  <table align="center" class="rost_search_form_table">
-<?php
 $groupID = '3075';
-$custom_field_keys = get_post_custom_keys($groupID);
 
-$fields_keys_array = array(
-    'field_59230a0162a4c', // Номер сертификата
-    'field_59230a2262a4d', // Статус
-    'field_59230a5562a4e', // Наименование организации
-    'field_59230a6062a4f', // ФИО руководителя
-    'field_59230ab762a53', // Область сертификации
-    'field_59230ac262a54', // ОКВЭД(ы)
-    'field_59230acd62a55', // Критерии сертификации
-    //'field_59230ae962a56', // Дата выдачи
-    'field_59255774baa4d', // ОГРН
-    'field_59255787baa4e', // ИНН
-);
+$acf_keys_all = get_post_custom_keys($groupID);
 
-$fields = array();
+foreach ( $acf_keys_all as $key => $fieldkey ) {
+    if ( ! get_post_meta(get_the_ID(), 'rs_' . $fieldkey, true) ) {
+        continue;
+    }
+    $acf_field = get_field_object($fieldkey, $groupID);
+    $acf_field['value'] = filter_input(INPUT_GET, $fieldkey, FILTER_SANITIZE_STRING);
+    $acf_fields[$fieldkey] = $acf_field;
+}
 
-foreach ( $custom_field_keys as $key => $fieldkey ) :
+$submit = (bool) filter_input(INPUT_GET, 'rost_search_filter', FILTER_SANITIZE_STRING);
 
-    $field = get_field_object($fieldkey, $groupID);
-    if ( ! in_array( $field['key'], $fields_keys_array ) ) { continue; }
-    $fields[$fieldkey] = $field;
-    switch ($field['type']) :
+$is_values = false;
+
+if ( $submit ) {
+
+    $paged = (get_query_var('page')) ? get_query_var('page') : 1 ;
+
+    $args = array(
+        'post_type' => 'stm_portfolio',
+        'post_status' => 'publish',
+        'paged' => $paged,
+        'posts_per_page' => 10,
+    );
+
+    $args_meta_query = array();
+
+    foreach ( $acf_fields as $acf_key => $acf_field ) {
+        if ( trim ( $acf_field['value'] ) ) {
+            $is_values = true;
+            $args_meta_query[] = array(
+                'key' => $acf_field['name'],
+                'compare' => 'LIKE',
+                'value' => $acf_field['value']
+            );
+        }
+    }
+
+    $args['meta_query'] = $args_meta_query;
+
+}
+
+get_header(); ?>
+
+<form action="/rs_service_page/rs_search_form" method="get">
+  <table align="center" class="rost_search_form_table">
+
+<?php
+
+foreach ( $acf_fields as $acf_field ) :
+
+    switch ($acf_field['type']) :
 
         case 'text' :
         case 'wysiwyg':
         case 'number':
             ?>
-            <tr><td><label for="<?php echo $field['key']; ?>"><?php echo $field['label']; ?></label></td>
-            <td><input id="<?php echo $field['key']; ?>" name="<?php echo $field['key']; ?>" type="text"></td></tr>
+            <tr><td><label for="<?php echo $acf_field['key']; ?>"><?php echo $acf_field['rs_title'] ? $acf_field['rs_title'] : $acf_field['label'] ; ?></label></td>
+            <td><input id="<?php echo $acf_field['key']; ?>" name="<?php echo $acf_field['key']; ?>" type="text" value="<?php echo $acf_field['value']; ?>"></td></tr>
             <?php
             break;
         case 'radio':
             ?>
-            <tr><td><label for="<?php echo $field['key']; ?>"><?php echo $field['label']; ?></label></td>
-            <td>  <select id="<?php echo $field['key']; ?>" name="<?php echo $field['key']; ?>">
-              <?php foreach ( $field['choices'] as $option ) : ?>
-              <option value="<?php echo $option ?>"><?php echo $option ?></option>
+            <tr><td><label for="<?php echo $acf_field['key']; ?>"><?php echo $acf_field['rs_title'] ? $acf_field['rs_title'] : $acf_field['label'] ; ?></label></td>
+            <td>  <select id="<?php echo $acf_field['key']; ?>" name="<?php echo $acf_field['key']; ?>">
+              <option value=""<?php if ( ! $acf_field['value'] ) : ?> selected<?php endif; ?>></option>
+              <?php foreach ( $acf_field['choices'] as $option ) : ?>
+              <option value="<?php echo $option ?>"<?php if ( $acf_field['value'] == $option ) : ?> selected<?php endif; ?>><?php echo $option ?></option>
               <?php endforeach; ?>
               </select></td></tr>
             <?php
@@ -65,59 +93,57 @@ endforeach;
         <input type="submit" name="rost_search_filter" value="Найти">
       </td>
     </tr>
+
   </table>
 </form>
 
 <?php
-$submit = (bool) filter_input(INPUT_GET, 'rost_search_filter', FILTER_SANITIZE_STRING);
-if ( $submit ):
-
-    $args = array(
-        'post_type' => 'stm_portfolio',
-        'post_status' => 'publish',
-        'numberposts' => -1
-    );
-
-$meta_query = array();
-
-foreach ( $fields_keys_array as $field_key ) {
-    $value = filter_input(INPUT_GET, $field_key, FILTER_SANITIZE_STRING);
-    if ( trim ( $value ) ) {
-        $field = $fields[$field_key];
-        $meta_query[] = array(
-            'key' => $field['name'],
-            'compare'	=> 'LIKE',
-            'value' => $value
-        );
-    }
-}
-
-$args['meta_query'] = $meta_query;
-$posts = get_posts($args);
+if ( $submit && $is_values ) :
+$posts = new WP_Query( $args );
+$temp_query = $wp_query;
+$wp_query   = NULL;
+$wp_query   = $posts;
+if ( $posts->have_posts() ) :
 ?>
 <br>
 <br>
 <table width="100%" class="rost_serch_results_table">
   <thead>
     <tr>
-<?php foreach ($fields as $field ) :  ?>
-      <th><?php echo $field['label']; ?></th>
+<?php foreach ($acf_fields as $acf_field ) :  ?>
+      <th><?php echo $acf_field['label']; ?></th>
 <?php endforeach; ?>
     </tr>
   </thead>
   <tbody>
-<?php foreach ( $posts as $post ) : ?>
+<?php  while ( $posts->have_posts() ) : $posts->the_post(); ?>
   <tr>
-<?php foreach ($fields as $field ) :  ?>
-    <td><a href="<?php echo get_permalink($post); ?>"><?php echo get_post_meta( $post->ID, $field['name'], true ); ?></a></td>
+<?php foreach ($acf_fields as $acf_field ) :  ?>
+    <td><a href="<?php echo get_permalink($post); ?>"><?php echo get_post_meta( $post->ID, $acf_field['name'], true ); ?></a></td>
 <?php endforeach; ?>
   </tr>
-<?php
-endforeach;
-endif;
-?>
+<?php endwhile; ?>
   </tbody>
 </table>
-
-<?php // print_r($fields); ?>
-<?php get_footer();
+<br>
+<?php
+$result = paginate_links( array(
+    'format'    => '?page=%#%',
+    'current'   => $paged,
+	'type'      => 'list',
+	'prev_text' => '<i class="fa fa-chevron-left"></i>',
+	'next_text' => '<i class="fa fa-chevron-right"></i>',
+) );
+$result = str_replace( '/' . $paged . '/', '', $result );
+echo $result;
+?>
+<?php wp_reset_postdata(); ?>
+<?php endif; ?>
+<?php if ( $submit && ! $posts ) : ?>
+<p class="rost_search_result_message">Не найдены данные, удовлетворяющие Вашему запросу.</p>
+<?php
+endif;
+$wp_query = NULL;
+$wp_query = $temp_query;
+endif;
+get_footer();

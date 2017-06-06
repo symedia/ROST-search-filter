@@ -30,3 +30,9 @@ E-Mail: info@symedia.ru
   border: #0098EF solid thin;
   vertical-align: top;
 }
+
+.rost_search_result_message {
+  padding: 20px 0;
+  text-align: center;
+  color: #F00;
+}
