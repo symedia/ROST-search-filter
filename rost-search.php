@@ -7,7 +7,7 @@ Version: 1.1
 Author: Gregory V Lominoga (Gromodar)
 Author URI: http://symedia.ru
 License: GPLv2
-GitHub Plugin URI: https://github.com/symedia/rost-search
+GitHub Plugin URI: https://github.com/symedia/ROST-search-filter
 */
 /*  Copyright 2017 Gregory V Lominoga (email: lominogagv@gmail.com)
 
