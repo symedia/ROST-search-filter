@@ -54,10 +54,11 @@ class RS_Admin {
 
         <fieldset>
           <legend style="font-size: 14px;"><b>Общие настройки</b></legend>
-          <label for="page_records_count">Количество записей на страницу:</label>
-          <input type="text" id="page_records_count" name="page_records_count" value="<?php get_post_meta( $post->ID, 'page_records_count', true ); ?>">
+          <label for="rs_page_records_count">Количество записей на страницу:</label>
+          <input type="text" id="rs_page_records_count" name="rs_page_records_count" value="<?php echo get_post_meta( $post->ID, 'rs_page_records_count', true ); ?>" size="3">
         </fieldset>
         <hr>
+        <br>
 
         <?php
 
@@ -75,10 +76,12 @@ class RS_Admin {
             <label for="rs_<?php echo $acf_field['key']; ?>_column">
             <input type="checkbox" id="rs_<?php echo $acf_field['key']; ?>_column" name="rs_<?php echo $acf_field['key']; ?>_column" value="1"<?php if ( $acf_field['rost_column'] ) : ?> checked<?php endif; ?>>
             Колонка таблицы</label><br>
-            <label for="rs_<?php echo $acf_field['key']; ?>_column_title">Название поля:</label>
+            <label for="rs_<?php echo $acf_field['key']; ?>_column_title">Заголовок колонки:</label>
             <input id="rs_<?php echo $acf_field['key']; ?>_column_title" type="text" name="rs_<?php echo $acf_field['key']; ?>_column_title" style="width: 100%;" value="<?php echo $acf_field['rost_column_title'] ?>">
         </fieldset>
+        <br>
         <hr>
+        <br>
 
         <?php
         endforeach;
@@ -102,6 +105,9 @@ class RS_Admin {
         } elseif( ! current_user_can( 'edit_post', $post_id ) ) {
             return $post_id;
         }
+///die(print_r($_POST));
+        $rs_page_records_count = filter_input( INPUT_POST, 'rs_page_records_count', FILTER_SANITIZE_NUMBER_INT );
+        update_post_meta( $post_id, 'rs_page_records_count', $rs_page_records_count );
 
         $groupID = '3075';
 
@@ -113,15 +119,11 @@ class RS_Admin {
                 continue;
             }
 
-            $page_records_count = sanitize_text_field( filter_input(INPUT_POST, 'page_records_count', FILTER_SANITIZE_STRING) );
+            $publish = filter_input( INPUT_POST, 'rs_' . $acf_field['key'], FILTER_SANITIZE_NUMBER_INT );
+            $title = sanitize_text_field( filter_input( INPUT_POST, 'rs_' . $acf_field['key'] . '_title', FILTER_SANITIZE_STRING ) );
 
-            $publish = filter_input(INPUT_POST, 'rs_' . $acf_field['key'], FILTER_SANITIZE_NUMBER_INT);
-            $title = sanitize_text_field( filter_input(INPUT_POST, 'rs_' . $acf_field['key'] . '_title', FILTER_SANITIZE_STRING) );
-
-            $column = filter_input(INPUT_POST, 'rs_' . $acf_field['key'] . '_column', FILTER_SANITIZE_NUMBER_INT);
-            $column_title = sanitize_text_field( filter_input(INPUT_POST, 'rs_' . $acf_field['key'] . '_column_title', FILTER_SANITIZE_STRING) );
-
-            update_post_meta( $post_id, 'page_records_count', $page_records_count );
+            $column = filter_input( INPUT_POST, 'rs_' . $acf_field['key'] . '_column', FILTER_SANITIZE_NUMBER_INT );
+            $column_title = sanitize_text_field( filter_input( INPUT_POST, 'rs_' . $acf_field['key'] . '_column_title', FILTER_SANITIZE_STRING ) );
 
             update_post_meta( $post_id, 'rs_' . $acf_field['key'], $publish );
             update_post_meta( $post_id, 'rs_' . $acf_field['key'] . '_title', $title );

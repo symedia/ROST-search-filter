@@ -10,26 +10,26 @@
 
 $groupID = '3075';
 
-$acf_keys_filter_all = get_post_custom_keys($groupID);
+$acf_keys_filter_all = get_post_custom_keys( $groupID );
 $acf_fields = array();
 foreach ( $acf_keys_filter_all as $field_key ) {
-    if ( ! get_post_meta(get_the_ID(), 'rs_' . $field_key, true) ) {
+    if ( ! get_post_meta( get_the_ID(), 'rs_' . $field_key, true ) ) {
         continue;
     }
-    $acf_field = get_field_object($field_key, $groupID);
-    $acf_field['value'] = filter_input(INPUT_GET, $field_key, FILTER_SANITIZE_STRING);
+    $acf_field = get_field_object( $field_key, $groupID );
+    $acf_field['value'] = filter_input( INPUT_GET, $field_key, FILTER_SANITIZE_STRING );
     $acf_fields[$field_key] = $acf_field;
 }
 
-$submit = (bool) filter_input(INPUT_GET, 'rost_search_filter', FILTER_SANITIZE_STRING);
+$submit = (bool) filter_input( INPUT_GET, 'rost_search_filter', FILTER_SANITIZE_STRING );
 
 $is_values = false;
 
 if ( $submit ) {
 
-    $paged = (get_query_var('page')) ? get_query_var('page') : 1 ;
+    $paged = ( get_query_var('page') ) ? get_query_var('page') : 1 ;
 
-    $page_records_count = get_post_meta( $post->ID, 'page_records_count', true );
+    $page_records_count = get_post_meta( $post->ID, 'rs_page_records_count', true );
 
     $post_per_page = $page_records_count ? $page_records_count : 10;
 
@@ -103,10 +103,12 @@ endforeach;
 
 <?php
 if ( $submit && $is_values ) :
+
 $posts = new WP_Query( $args );
 $temp_query = $wp_query;
 $wp_query   = NULL;
 $wp_query   = $posts;
+
 if ( $posts->have_posts() ) :
 
 $acf_keys_column_all = get_post_custom_keys($groupID);
@@ -142,11 +144,13 @@ foreach ( $acf_keys_column_all as $field_key ) {
 </table>
 <br>
 <?php
-endif; ?>
-<?php if ( $submit && ! $posts->have_posts() ) : ?>
+
+else :
+?>
 <p class="rost_search_result_message">Не найдены данные, удовлетворяющие Вашему запросу.</p>
 <?php
 endif;
+
 $result = paginate_links( array(
     'format'    => '?page=%#%',
     'current'   => $paged,
@@ -159,5 +163,9 @@ echo $result;
 wp_reset_postdata();
 $wp_query = NULL;
 $wp_query = $temp_query;
+elseif ( $submit && ! $is_values ) :
+?>
+<p class="rost_search_result_message">Для поиска нужно заполнить хотя бы одно поле</p>
+<?php
 endif;
 get_footer();

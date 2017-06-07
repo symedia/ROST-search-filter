@@ -78,20 +78,6 @@ class ROSTSearch {
 			define( $name, $value );
 		}
 	}
-
-
-//    public function search_filter_render_field_settings( $field ) {
-//
-//        acf_render_field_setting( $field, array(
-//            'label'			=> __('Фильтр ?'),
-//            'instructions'	=> __('Отображать поле в фильтре'),
-//            'name'			=> 'is_rost_filter',
-//            'type'			=> 'true_false',
-//            'ui'			=> 0,
-//        ), true);
-//
-//    }
-
 }
 
 $rost_search = ROSTSearch::instance();
