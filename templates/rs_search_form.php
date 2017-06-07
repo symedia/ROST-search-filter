@@ -29,11 +29,15 @@ if ( $submit ) {
 
     $paged = (get_query_var('page')) ? get_query_var('page') : 1 ;
 
+    $page_records_count = get_post_meta( $post->ID, 'page_records_count', true );
+
+    $post_per_page = $page_records_count ? $page_records_count : 10;
+
     $args = array(
         'post_type' => 'stm_portfolio',
         'post_status' => 'publish',
         'paged' => $paged,
-        'posts_per_page' => 10,
+        'posts_per_page' => $post_per_page,
     );
 
     $args_meta_query = array();

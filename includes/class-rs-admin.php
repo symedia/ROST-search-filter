@@ -50,6 +50,16 @@ class RS_Admin {
 //        exit(print_r($acf_fields));
 
         wp_nonce_field( plugin_basename(__FILE__), 'rs_search_filter_noncename' );
+        ?>
+
+        <fieldset>
+          <legend style="font-size: 14px;"><b>Общие настройки</b></legend>
+          <label for="page_records_count">Количество записей на страницу:</label>
+          <input type="text" id="page_records_count" name="page_records_count" value="<?php get_post_meta( $post->ID, 'page_records_count', true ); ?>">
+        </fieldset>
+        <hr>
+
+        <?php
 
         foreach ( $acf_fields as $acf_field ) :
         ?>
@@ -103,11 +113,15 @@ class RS_Admin {
                 continue;
             }
 
+            $page_records_count = sanitize_text_field( filter_input(INPUT_POST, 'page_records_count', FILTER_SANITIZE_STRING) );
+
             $publish = filter_input(INPUT_POST, 'rs_' . $acf_field['key'], FILTER_SANITIZE_NUMBER_INT);
             $title = sanitize_text_field( filter_input(INPUT_POST, 'rs_' . $acf_field['key'] . '_title', FILTER_SANITIZE_STRING) );
 
             $column = filter_input(INPUT_POST, 'rs_' . $acf_field['key'] . '_column', FILTER_SANITIZE_NUMBER_INT);
             $column_title = sanitize_text_field( filter_input(INPUT_POST, 'rs_' . $acf_field['key'] . '_column_title', FILTER_SANITIZE_STRING) );
+
+            update_post_meta( $post_id, 'page_records_count', $page_records_count );
 
             update_post_meta( $post_id, 'rs_' . $acf_field['key'], $publish );
             update_post_meta( $post_id, 'rs_' . $acf_field['key'] . '_title', $title );
