@@ -127,6 +127,11 @@ if ( $posts->have_posts() ) :
 </table>
 <br>
 <?php
+endif; ?>
+<?php if ( $submit && ! $posts->have_posts() ) : ?>
+<p class="rost_search_result_message">Не найдены данные, удовлетворяющие Вашему запросу.</p>
+<?php
+endif;
 $result = paginate_links( array(
     'format'    => '?page=%#%',
     'current'   => $paged,
@@ -136,13 +141,7 @@ $result = paginate_links( array(
 ) );
 $result = str_replace( '/' . $paged . '/', '', $result );
 echo $result;
-?>
-<?php wp_reset_postdata(); ?>
-<?php endif; ?>
-<?php if ( $submit && ! $posts ) : ?>
-<p class="rost_search_result_message">Не найдены данные, удовлетворяющие Вашему запросу.</p>
-<?php
-endif;
+wp_reset_postdata(); 
 $wp_query = NULL;
 $wp_query = $temp_query;
 endif;

@@ -3,7 +3,7 @@
 Plugin Name: ROST Search filter
 Plugin URI: https://github.com/symedia/rost-search
 Description: Plugin search support by meta values
-Version: 1.1
+Version: 1.2
 Author: Gregory V Lominoga (Gromodar)
 Author URI: http://symedia.ru
 License: GPLv2
