@@ -113,7 +113,7 @@ foreach ( $acf_keys_column_all as $field_key ) {
     }
     $acf_field = get_field_object($field_key, $groupID);
     $acf_field['column_title'] = get_post_meta( get_the_ID(), 'rs_' . $field_key . '_column_title', true );
-    $acf_fields[$fieldkey] = $acf_field;
+    $acf_fields[$field_key] = $acf_field;
 }
 ?>
 <br>
