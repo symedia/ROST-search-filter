@@ -37,13 +37,13 @@ class RS_Admin {
 
         foreach ( $acf_keys_all as $fieldkey ) {
             $acf_field = get_field_object($fieldkey, $groupID);
-            if ( ! $acf_field['label']
-                    || isset( $acf_field['media_upload'] )
-                    || $acf_field['type'] === 'date_picker' ) {
+            if ( ! $acf_field['label'] ) {
                 continue;
             }
             $acf_field['rost_publish'] = get_post_meta( $post->ID, 'rs_' . $fieldkey, true );
             $acf_field['rost_title'] = get_post_meta( $post->ID, 'rs_' . $fieldkey . '_title', true );
+            $acf_field['rost_column'] = get_post_meta( $post->ID, 'rs_' . $fieldkey . '_column', true );
+            $acf_field['rost_column_title'] = get_post_meta( $post->ID, 'rs_' . $fieldkey . '_column_title', true );
             $acf_fields[$fieldkey] = $acf_field;
         }
 
@@ -58,9 +58,15 @@ class RS_Admin {
           <legend><b><?php echo $acf_field['label']; ?></b></legend>
             <label for="rs_<?php echo $acf_field['key']; ?>">
             <input type="checkbox" id="rs_<?php echo $acf_field['key']; ?>" name="rs_<?php echo $acf_field['key']; ?>" value="1"<?php if ( $acf_field['rost_publish'] ) : ?> checked<?php endif; ?>>
-            Вкл/Выкл</label><br>
+            Поле фильтра</label><br>
             <label for="rs_<?php echo $acf_field['key']; ?>_title">Название поля:</label>
-            <input id="rs_<?php echo $acf_field['key']; ?>_title" type="text" name="rs_<?php echo $acf_field['key']; ?>_title" style="width: 100%;" value="<?php echo $acf_field['rost_title'] ?>">
+            <input id="rs_<?php echo $acf_field['key']; ?>_title" type="text" name="rs_<?php echo $acf_field['key']; ?>_title" style="width: 100%;" value="<?php echo $acf_field['rost_title'] ?>"><br>
+
+            <label for="rs_<?php echo $acf_field['key']; ?>_column">
+            <input type="checkbox" id="rs_<?php echo $acf_field['key']; ?>_column" name="rs_<?php echo $acf_field['key']; ?>_column" value="1"<?php if ( $acf_field['rost_column'] ) : ?> checked<?php endif; ?>>
+            Колонка таблицы</label><br>
+            <label for="rs_<?php echo $acf_field['key']; ?>_column_title">Название поля:</label>
+            <input id="rs_<?php echo $acf_field['key']; ?>_column_title" type="text" name="rs_<?php echo $acf_field['key']; ?>_column_title" style="width: 100%;" value="<?php echo $acf_field['rost_column_title'] ?>">
         </fieldset>
         <hr>
 
@@ -93,17 +99,21 @@ class RS_Admin {
 
         foreach ( $acf_keys_all as $fieldkey ) {
             $acf_field = get_field_object($fieldkey, $groupID);
-            if ( ! $acf_field['label']
-                    || isset( $acf_field['media_upload'] )
-                    || $acf_field['type'] === 'date_picker' ) {
+            if ( ! $acf_field['label'] ) {
                 continue;
             }
 
             $publish = filter_input(INPUT_POST, 'rs_' . $acf_field['key'], FILTER_SANITIZE_NUMBER_INT);
             $title = sanitize_text_field( filter_input(INPUT_POST, 'rs_' . $acf_field['key'] . '_title', FILTER_SANITIZE_STRING) );
 
+            $column = filter_input(INPUT_POST, 'rs_' . $acf_field['key'] . '_column', FILTER_SANITIZE_NUMBER_INT);
+            $column_title = sanitize_text_field( filter_input(INPUT_POST, 'rs_' . $acf_field['key'] . '_column_title', FILTER_SANITIZE_STRING) );
+
             update_post_meta( $post_id, 'rs_' . $acf_field['key'], $publish );
             update_post_meta( $post_id, 'rs_' . $acf_field['key'] . '_title', $title );
+
+            update_post_meta( $post_id, 'rs_' . $acf_field['key'] . '_column', $column );
+            update_post_meta( $post_id, 'rs_' . $acf_field['key'] . '_column_title', $column_title );
         }
 
 

@@ -10,15 +10,15 @@
 
 $groupID = '3075';
 
-$acf_keys_all = get_post_custom_keys($groupID);
-
-foreach ( $acf_keys_all as $key => $fieldkey ) {
-    if ( ! get_post_meta(get_the_ID(), 'rs_' . $fieldkey, true) ) {
+$acf_keys_filter_all = get_post_custom_keys($groupID);
+$acf_fields = array();
+foreach ( $acf_keys_filter_all as $field_key ) {
+    if ( ! get_post_meta(get_the_ID(), 'rs_' . $field_key, true) ) {
         continue;
     }
-    $acf_field = get_field_object($fieldkey, $groupID);
-    $acf_field['value'] = filter_input(INPUT_GET, $fieldkey, FILTER_SANITIZE_STRING);
-    $acf_fields[$fieldkey] = $acf_field;
+    $acf_field = get_field_object($field_key, $groupID);
+    $acf_field['value'] = filter_input(INPUT_GET, $field_key, FILTER_SANITIZE_STRING);
+    $acf_fields[$field_key] = $acf_field;
 }
 
 $submit = (bool) filter_input(INPUT_GET, 'rost_search_filter', FILTER_SANITIZE_STRING);
@@ -104,6 +104,17 @@ $temp_query = $wp_query;
 $wp_query   = NULL;
 $wp_query   = $posts;
 if ( $posts->have_posts() ) :
+
+$acf_keys_column_all = get_post_custom_keys($groupID);
+$acf_fields = array();
+foreach ( $acf_keys_column_all as $field_key ) {
+    if ( ! get_post_meta( get_the_ID(), 'rs_' . $field_key . '_column', true ) ) {
+        continue;
+    }
+    $acf_field = get_field_object($field_key, $groupID);
+    $acf_field['column_title'] = get_post_meta( get_the_ID(), 'rs_' . $field_key . '_column_title', true );
+    $acf_fields[$fieldkey] = $acf_field;
+}
 ?>
 <br>
 <br>
@@ -111,7 +122,7 @@ if ( $posts->have_posts() ) :
   <thead>
     <tr>
 <?php foreach ($acf_fields as $acf_field ) :  ?>
-      <th><?php echo $acf_field['label']; ?></th>
+      <th><?php echo $acf_field['label'] ? $acf_field['label'] : $acf_field['column_title']; ?></th>
 <?php endforeach; ?>
     </tr>
   </thead>
@@ -141,7 +152,7 @@ $result = paginate_links( array(
 ) );
 $result = str_replace( '/' . $paged . '/', '', $result );
 echo $result;
-wp_reset_postdata(); 
+wp_reset_postdata();
 $wp_query = NULL;
 $wp_query = $temp_query;
 endif;
